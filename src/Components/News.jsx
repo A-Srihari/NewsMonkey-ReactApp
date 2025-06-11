@@ -7,7 +7,7 @@ import PropTypes from "prop-types";
 
 const News = (props) => {
   const [articles, setArticles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [totalResults, setTotalResults] = useState([]);
   const [page, setPage] = useState(1);
 
@@ -50,13 +50,18 @@ const News = (props) => {
   useEffect(() => {
     const fetchNews = async () => {
       props.setProgress(0);
-      let url = `https://newsapi.org/v2/top-headlines?apiKey=${props.apiKey}&page=1&pageSize=6&category=${props.category}`;
-      let data = await fetch(url);
-      let parseData = await data.json();
-      console.log(parseData);
-      setArticles(parseData.articles);
-      setTotalResults(parseData.totalResults);
-      setLoading(false);
+      try {
+        let url = `https://newsapi.org/v2/top-headlines?apiKey=${props.apiKey}&page=1&pageSize=6&category=${props.category}`;
+        let data = await fetch(url);
+        let parseData = await data.json();
+        setArticles(
+          Array.isArray(parseData.articles) ? parseData.articles : []
+        );
+        setTotalResults(parseData.totalResults || 0);
+      } catch (error) {
+        setArticles([]);
+        setTotalResults(0);
+      }
       props.setProgress(100);
     };
     fetchNews();
@@ -81,7 +86,7 @@ const News = (props) => {
 
       <div className="container" id="news-items">
         <div className="row my-3 d-flex justify-content-center align-items-center">
-          {articles.map((ele) => {
+          {(articles || []).map((ele) => {
             return (
               <NewsItems
                 title={ele.title}
